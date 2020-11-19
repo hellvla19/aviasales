@@ -12,7 +12,11 @@ func Test_updateDictionary(t *testing.T) {
 	ctx.Request.SetRequestURI("localhost:8080/load")
 	ctx.Request.SetBodyString(`["foobar", "aabb", "baba", "boofar", "test"]`)
 	ctx.Request.Header.SetMethod("POST")
-	expectedWords := []string{"foobar", "aabb", "baba", "boofar", "test"}
+	expectedWords := map[string][]string{
+		"aabb":   {"aabb", "baba"},
+		"abfoor": {"foobar", "boofar"},
+		"estt":   {"test"},
+	}
 
 	updateDictionary(ctx)
 	ao.Equal(expectedWords, D.Words)
@@ -29,13 +33,18 @@ func Test_getAnagrams(t *testing.T) {
 func Test_searchAnagrams(t *testing.T) {
 	ao := assert.New(t)
 	testTable := []struct {
-		tcase, word                       string
-		dictionaryWords, expectedAnagrams []string
+		tcase, word      string
+		dictionaryWords  map[string][]string
+		expectedAnagrams []string
 	}{
 		{
-			tcase:            "success",
-			word:             "foobar",
-			dictionaryWords:  []string{"foobar", "aabb", "baba", "boofar", "test"},
+			tcase: "success",
+			word:  "foobar",
+			dictionaryWords: map[string][]string{
+				"aabb":   {"aabb", "baba"},
+				"abfoor": {"foobar", "boofar"},
+				"estt":   {"test"},
+			},
 			expectedAnagrams: []string{"foobar", "boofar"},
 		},
 		{
@@ -45,9 +54,13 @@ func Test_searchAnagrams(t *testing.T) {
 			expectedAnagrams: nil,
 		},
 		{
-			tcase:            "empty anagrams",
-			word:             "fffbar",
-			dictionaryWords:  []string{"foobar", "aabb", "baba", "boofar", "test"},
+			tcase: "empty anagrams",
+			word:  "fffbar",
+			dictionaryWords: map[string][]string{
+				"aabb":   {"aabb", "baba"},
+				"abfoor": {"foobar", "boofar"},
+				"estt":   {"test"},
+			},
 			expectedAnagrams: nil,
 		}}
 

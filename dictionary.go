@@ -10,7 +10,7 @@ import (
 )
 
 type Dictionary struct {
-	Words []string
+	Words map[string][]string
 }
 
 var D = Dictionary{}
@@ -22,7 +22,12 @@ func updateDictionary(ctx *fasthttp.RequestCtx) {
 		ctx.WriteString("Failed to load dictionary!")
 		log.Fatal(err)
 	}
-	D.Words = w
+	D.Words = make(map[string][]string)
+	for _, v := range w {
+		preparedW := util.SortString(strings.ToLower(strings.TrimSpace(v)))
+		D.Words[preparedW] = append(D.Words[preparedW], v)
+	}
+
 	if len(D.Words) != 0 {
 		ctx.WriteString("Success update dictionary!")
 	}
@@ -41,13 +46,10 @@ func searchAnagrams(word string) []string {
 	if D.Words == nil {
 		return nil
 	}
-	var words []string
 	preparedWord := util.SortString(strings.ToLower(strings.TrimSpace(word)))
-	for _, w := range D.Words {
-		preparedW := util.SortString(strings.ToLower(strings.TrimSpace(w)))
-		if preparedWord == preparedW {
-			words = append(words, w)
-		}
+	if _, ok := D.Words[preparedWord]; ok {
+		return D.Words[preparedWord]
 	}
-	return words
+
+	return nil
 }
